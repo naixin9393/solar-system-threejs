@@ -106,7 +106,7 @@ function onDocumentMouseDown(event) {
 }
 
 function Esfera(px, py, pz, radio, nx, ny, col) {
-  let geometry = new THREE.SphereBufferGeometry(radio, nx, ny);
+  let geometry = new THREE.SphereGeometry(radio, nx, ny);
   //Material con o sin relleno
   let material = new THREE.MeshBasicMaterial({
     color: col,
