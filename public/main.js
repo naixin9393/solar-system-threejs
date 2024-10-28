@@ -1,22 +1,94 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { CelestialBody } from "./celestial-body.js";
+import { CELESTIAL_BODIES } from "./celestial-body-constants.js";
 
-// Fuentes
-//https://threejs.org/docs/#manual/en/introduction/Creating-a-scene -->
-//https://r105.threejsfundamentals.org/threejs/lessons/threejs-primitives.html  -->
-let scene;
+let scene, renderer;
 let camera;
-let renderer;
-let objetos = [];
+let info;
+let grid;
+let t0 = 0;
+let accglobal = 0.001;
+let timestamp;
 
-let grid, perfil, plano;
-const MAX_POINTS = 500;
-let raycaster;
-let npuntos;
+const SUN = CELESTIAL_BODIES.SUN;
+const MERCURY = CELESTIAL_BODIES.MERCURY;
+const VENUS = CELESTIAL_BODIES.VENUS;
+const EARTH = CELESTIAL_BODIES.EARTH;
+const MARS = CELESTIAL_BODIES.MARS;
+const JUPITER = CELESTIAL_BODIES.JUPITER;
+const SATURN = CELESTIAL_BODIES.SATURN;
+const URANUS = CELESTIAL_BODIES.URANUS;
+const NEPTUNE = CELESTIAL_BODIES.NEPTUNE;
+const PLUTO = CELESTIAL_BODIES.PLUTO;
+
+const EUROPA = CELESTIAL_BODIES.EUROPA;
+
+const TITAN = CELESTIAL_BODIES.TITAN;
+
+const TRITON = CELESTIAL_BODIES.TRITON;
+
+const MOON = CELESTIAL_BODIES.MOON;
 
 init();
-animate();
+animationLoop();
 
 function init() {
+  setTitle("Solar System");
+  setCamera();
+  // setGrid();
+  setSolarSystem();
+  t0 = Date.now();
+}
+
+function animationLoop() {
+  timestamp = (Date.now() - t0) * accglobal;
+
+  requestAnimationFrame(animationLoop);
+
+  SUN.animate(timestamp, 0, 0);
+
+  renderer.render(scene, camera);
+}
+
+function setSolarSystem() {
+  SUN.addSatellite(MERCURY);
+  SUN.addSatellite(VENUS);
+  SUN.addSatellite(EARTH);
+  SUN.addSatellite(MARS);
+  SUN.addSatellite(JUPITER);
+  SUN.addSatellite(SATURN);
+  SUN.addSatellite(URANUS);
+  SUN.addSatellite(NEPTUNE);
+  SUN.addSatellite(PLUTO);
+  
+  EARTH.addSatellite(MOON);
+  
+  JUPITER.addSatellite(EUROPA);
+
+  SATURN.addSatellite(TITAN);
+
+  NEPTUNE.addSatellite(TRITON);
+
+  SUN.addToScene(scene);
+}
+
+function setTitle(title) {
+  info = document.createElement("div");
+  info.style.position = "absolute";
+  info.style.top = "30px";
+  info.style.width = "100%";
+  info.style.textAlign = "center";
+  info.style.color = "#fff";
+  info.style.fontWeight = "bold";
+  info.style.backgroundColor = "transparent";
+  info.style.zIndex = "1";
+  info.style.fontFamily = "Monospace";
+  info.innerHTML = title;
+  document.body.appendChild(info);
+}
+
+function setCamera() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
     75,
@@ -24,109 +96,18 @@ function init() {
     0.1,
     1000
   );
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, 0, 10);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  //Asistente GridHelper
-  grid = new THREE.GridHelper(10, 10);
-  grid.position.set(0, 0, 0);
+  let camcontrols = new OrbitControls(camera, renderer.domElement);
+}
+
+function setGrid() {
+  grid = new THREE.GridHelper(20, 40);
   grid.geometry.rotateX(Math.PI / 2);
-  //Desplaza levemente hacia la cámara
   grid.position.set(0, 0, 0.05);
-
   scene.add(grid);
-
-  //Creo un plano en z=0 que no muestro para la intersección
-  let geometryp = new THREE.PlaneGeometry(20, 20);
-  let materialp = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    side: THREE.DoubleSide,
-  });
-  plano = new THREE.Mesh(geometryp, materialp);
-  plano.visible = false;
-  scene.add(plano);
-
-  //Rayo para intersección
-  raycaster = new THREE.Raycaster();
-
-  //Polilínea dinámica prealojada ver https://threejs.org/docs/#manual/en/introduction/How-to-update-things
-  let geometry = new THREE.BufferGeometry();
-  // Tres valores por vértice
-  let positions = new Float32Array(MAX_POINTS * 3);
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-  //Rango a dibujar
-  npuntos = 0;
-  geometry.setDrawRange(0, npuntos);
-  let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-  perfil = new THREE.Line(geometry, material);
-  //Añade al grafo de escena
-  scene.add(perfil);
-
-  //Manejador de eventos
-  document.addEventListener("mousedown", onDocumentMouseDown);
-}
-function onDocumentMouseDown(event) {
-  //Conversión coordenadas del puntero
-  const mouse = {
-    x: (event.clientX / renderer.domElement.clientWidth) * 2 - 1,
-    y: -(event.clientY / renderer.domElement.clientHeight) * 2 + 1,
-  };
-
-  //Intersección, define rayo
-  raycaster.setFromCamera(mouse, camera);
-
-  // Intersecta
-  const intersects = raycaster.intersectObject(plano);
-  // ¿Hay alguna intersección?
-  if (intersects.length > 0) {
-    //Añade vértice a la pòlilínea
-    const vertices = perfil.geometry.attributes.position.array;
-
-    vertices[npuntos * 3] = intersects[0].point.x;
-    vertices[npuntos * 3 + 1] = intersects[0].point.y;
-    vertices[npuntos * 3 + 2] = intersects[0].point.z;
-    npuntos++;
-    //Muestra el valor de la intersección
-    console.log(intersects[0].point);
-
-    Esfera(
-      intersects[0].point.x,
-      intersects[0].point.y,
-      intersects[0].point.z,
-      0.2,
-      10,
-      10,
-      0xff00ff
-    );
-  }
-}
-
-function Esfera(px, py, pz, radio, nx, ny, col) {
-  let geometry = new THREE.SphereGeometry(radio, nx, ny);
-  //Material con o sin relleno
-  let material = new THREE.MeshBasicMaterial({
-    color: col,
-    wireframe: true, //Descomenta para activar modelo de alambres
-  });
-
-  let mesh = new THREE.Mesh(geometry, material);
-  //Posición de la esfera
-  mesh.position.set(px, py, pz);
-  scene.add(mesh);
-  objetos.push(mesh);
-}
-
-//Bucle de animación
-function animate() {
-  requestAnimationFrame(animate);
-
-  //Polilínea, define el número de vértices y actualiza posiciones
-  perfil.geometry.setDrawRange(0, npuntos);
-  perfil.geometry.attributes.position.needsUpdate = true;
-
-  renderer.render(scene, camera);
 }
