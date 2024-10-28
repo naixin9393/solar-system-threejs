@@ -56,68 +56,47 @@ function init() {
   grid.position.set(0, 0, 0.05);
   scene.add(grid);
 
-  sun = new CelestialBody("Sun", 0.8, 0xffff00, 0, 1, 0, 0);
+  // sun = new CelestialBody("Sun", 1, 0xffff00, 0, 1, 0, 0);
+  
+  sun = new CelestialBody({
+    name: "Sun",
+    radius: 1,
+    color: 0xffffff,
+    distance: 0,
+    period: 1,
+    minorAxis: 0,
+    majorAxis: 0
+  })
 
-  earth = new CelestialBody("Earth", 0.5, 0x00ff00, 0.2, 0.4, 1, 1);
-  moon = new CelestialBody("Moon", 0.05, 0xffff00,  0.5, 0.5, 1, 1);
+  earth = new CelestialBody({
+    name: "Earth", 
+    radius: 0.5, 
+    color: 0xffff00, 
+    distance: 2, 
+    period: 365, 
+    minorAxis: 1, 
+    majorAxis: 1
+  });
+  // moon = new CelestialBody("Moon", 0.05, 0xffff00,  0.5, 28, 1.2, 1);
+  
+  moon = new CelestialBody({
+    name: "Moon",
+    radius: 0.05,
+    color: 0xaaaaaa,
+    distance: 0.5,
+    period: 28,
+    minorAxis: 3,
+    majorAxis: 1
+  });
+
 
   sun.addSatellite(earth);
   earth.addSatellite(moon);
   
-  sun.draw(scene);
+  sun.addToScene(scene);
 
   //Inicio tiempo
   t0 = Date.now();
-  //EsferaChild(objetos[0],3.0,0,0,0.8,10,10, 0x00ff00);
-}
-
-function Estrella(rad, col) {
-  let geometry = new THREE.SphereGeometry(rad, 10, 10);
-  let material = new THREE.MeshBasicMaterial({ color: col });
-  estrella = new THREE.Mesh(geometry, material);
-  // scene.add(estrella);
-}
-
-function Planeta(radio, dist, vel, col, f1, f2) {
-  let geom = new THREE.SphereGeometry(radio, 10, 10);
-  let mat = new THREE.MeshBasicMaterial({ color: col });
-  let planeta = new THREE.Mesh(geom, mat);
-  planeta.userData.dist = dist;
-  planeta.userData.speed = vel;
-  planeta.userData.f1 = f1;
-  planeta.userData.f2 = f2;
-
-  Planetas.push(planeta);
-  scene.add(planeta);
-
-  //Dibuja trayectoria, con
-  let curve = new THREE.EllipseCurve(
-    0,
-    0, // centro
-    dist * f1,
-    dist * f2 // radios elipse
-  );
-  //Crea geometría
-  let points = curve.getPoints(50);
-  let geome = new THREE.BufferGeometry().setFromPoints(points);
-  let mate = new THREE.LineBasicMaterial({ color: 0xffffff });
-  // Objeto
-  let orbita = new THREE.Line(geome, mate);
-  scene.add(orbita);
-}
-
-function Luna(planeta, radio, dist, vel, col, angle) {
-  var pivote = new THREE.Object3D();
-  pivote.rotation.x = angle;
-  planeta.add(pivote);
-  var geom = new THREE.SphereGeometry(radio, 10, 10);
-  var mat = new THREE.MeshBasicMaterial({ color: col });
-  var luna = new THREE.Mesh(geom, mat);
-  luna.userData.dist = dist;
-  luna.userData.speed = vel;
-
-  Lunas.push(luna);
-  pivote.add(luna);
 }
 
 //Bucle de animación
@@ -126,31 +105,7 @@ function animationLoop() {
 
   requestAnimationFrame(animationLoop);
 
-  //Modifica rotación de todos los objetos
-  // for (let object of Planetas) {
-  //   object.position.x =
-  //     Math.cos(timestamp * object.userData.speed) *
-  //     object.userData.f1 *
-  //     object.userData.dist;
-  //   object.position.y =
-  //     Math.sin(timestamp * object.userData.speed) *
-  //     object.userData.f2 *
-  //     object.userData.dist;
-  // }
-
-  // for (let object of Lunas) {
-  //   object.position.x =
-  //     Math.cos(timestamp * object.userData.speed) * object.userData.dist;
-  //   object.position.y =
-  //     Math.sin(timestamp * object.userData.speed) * object.userData.dist;
-  // }
-  // 
   sun.animate(timestamp, 0, 0);
-  // earth.mesh.position.x = Math.cos(timestamp * 0.1) * 2;
-  // earth.mesh.position.y = Math.sin(timestamp * 0.1) * 2;
-  
-  // moon.mesh.position.x = earth.mesh.position.x + Math.cos(timestamp * 0.5) * 1;
-  // moon.mesh.position.y = earth.mesh.position.y + Math.sin(timestamp * 0.5) * 1;
 
   renderer.render(scene, camera);
 }

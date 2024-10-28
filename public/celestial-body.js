@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 
+const baseSpeed = 30;
+
 export class CelestialBody {
-    constructor(name, radius, color, distance, period, minorAxis, majorAxis) {
+    constructor({name, radius, color, distance, period, minorAxis, majorAxis}) {
         this.name = name;
         this.radius = radius;
         this.color = color;
@@ -15,6 +17,8 @@ export class CelestialBody {
         this.geometry = new THREE.SphereGeometry(radius, 20, 20);
         this.material = new THREE.MeshBasicMaterial({ color: color });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
+        
+        this.initializeOrbit();
     }
     
     satellites() {
@@ -29,18 +33,36 @@ export class CelestialBody {
         this.satellites.push(satellite);
     }
     
-    draw(scene) {
+    initializeOrbit() {
+        let curve = new THREE.EllipseCurve(
+            0,
+            0,
+            this.majorAxis * this.distance,
+            this.minorAxis * this.distance,
+        );
+        let points = curve.getPoints(50);
+        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        let material = new THREE.LineBasicMaterial({ color: 0xffffff });
+        this.orbit = new THREE.Line(geometry, material);
+    }
+    
+    addToScene(scene) {
         scene.add(this.mesh);
+        scene.add(this.orbit);
         for (let satellite of this.satellites) {
-            satellite.draw(scene);
+            satellite.addToScene(scene);
         }
     }
     
     animate(timestamp, initialX, initialY) {
+        this.mesh.position.x = initialX + Math.sin(timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
+        this.mesh.position.y = initialY + Math.cos(timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
         for (let satellite of this.satellites) {
             satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.y);
         }
-        this.mesh.position.x = initialX + Math.sin(timestamp) * this.majorAxis;
-        this.mesh.position.y = initialY + Math.cos(timestamp) * this.minorAxis;
+        if (this.orbit) {
+            this.orbit.position.x = initialX;
+            this.orbit.position.y = initialY;
+        }
     }
 }
