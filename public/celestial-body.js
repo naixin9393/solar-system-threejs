@@ -14,7 +14,7 @@ export class CelestialBody {
         
         this.satellites = []
 
-        this.geometry = new THREE.SphereGeometry(radius, 20, 20);
+        this.geometry = new THREE.SphereGeometry(radius, 32, 32);
         this.material = new THREE.MeshBasicMaterial({ color: color });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         
@@ -40,7 +40,7 @@ export class CelestialBody {
             this.majorAxis * this.distance,
             this.minorAxis * this.distance,
         );
-        let points = curve.getPoints(50);
+        let points = curve.getPoints(100);
         let geometry = new THREE.BufferGeometry().setFromPoints(points);
         let material = new THREE.LineBasicMaterial({ color: 0xffffff });
         this.orbit = new THREE.Line(geometry, material);

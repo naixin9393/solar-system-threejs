@@ -12,7 +12,22 @@ let accglobal = 0.001;
 let timestamp;
 
 const SUN = CELESTIAL_BODIES.SUN;
+const MERCURY = CELESTIAL_BODIES.MERCURY;
+const VENUS = CELESTIAL_BODIES.VENUS;
 const EARTH = CELESTIAL_BODIES.EARTH;
+const MARS = CELESTIAL_BODIES.MARS;
+const JUPITER = CELESTIAL_BODIES.JUPITER;
+const SATURN = CELESTIAL_BODIES.SATURN;
+const URANUS = CELESTIAL_BODIES.URANUS;
+const NEPTUNE = CELESTIAL_BODIES.NEPTUNE;
+const PLUTO = CELESTIAL_BODIES.PLUTO;
+
+const EUROPA = CELESTIAL_BODIES.EUROPA;
+
+const TITAN = CELESTIAL_BODIES.TITAN;
+
+const TRITON = CELESTIAL_BODIES.TRITON;
+
 const MOON = CELESTIAL_BODIES.MOON;
 
 init();
@@ -21,10 +36,26 @@ animationLoop();
 function init() {
   setTitle("Solar System");
   setCamera();
-  setGrid();
+  // setGrid();
 
+  SUN.addSatellite(MERCURY);
+  SUN.addSatellite(VENUS);
   SUN.addSatellite(EARTH);
+  SUN.addSatellite(MARS);
+  SUN.addSatellite(JUPITER);
+  SUN.addSatellite(SATURN);
+  SUN.addSatellite(URANUS);
+  SUN.addSatellite(NEPTUNE);
+  SUN.addSatellite(PLUTO);
+  
   EARTH.addSatellite(MOON);
+  
+  JUPITER.addSatellite(EUROPA);
+
+  SATURN.addSatellite(TITAN);
+
+  NEPTUNE.addSatellite(TRITON);
+
   SUN.addToScene(scene);
 
   //Inicio tiempo
