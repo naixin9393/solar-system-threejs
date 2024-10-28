@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { CelestialBody } from "./celestial-body.js";
 
 let scene, renderer;
 let camera;
@@ -11,6 +12,9 @@ let estrella,
 let t0 = 0;
 let accglobal = 0.001;
 let timestamp;
+let moon;
+let earth;
+let sun;
 
 init();
 animationLoop();
@@ -52,13 +56,15 @@ function init() {
   grid.position.set(0, 0, 0.05);
   scene.add(grid);
 
-  //Objetos
-  Estrella(1.8, 0xffff00);
-  Planeta(0.5, 4.0, 1.0, 0x00ff00, 2, 1.5);
-  Planeta(0.8, 5.8, 1.2, 0xffff0f, 1.0, 1.0);
+  sun = new CelestialBody("Sun", 0.8, 0xffff00, 0, 1, 0, 0);
 
-  Luna(Planetas[0], 0.05, 0.5, -3.5, 0xffff00, 0.0);
-  Luna(Planetas[0], 0.04, 0.7, 1.5, 0xff0f00, Math.PI / 6);
+  earth = new CelestialBody("Earth", 0.5, 0x00ff00, 0.2, 0.4, 1, 1);
+  moon = new CelestialBody("Moon", 0.05, 0xffff00,  0.5, 0.5, 1, 1);
+
+  sun.addSatellite(earth);
+  earth.addSatellite(moon);
+  
+  sun.draw(scene);
 
   //Inicio tiempo
   t0 = Date.now();
@@ -69,7 +75,7 @@ function Estrella(rad, col) {
   let geometry = new THREE.SphereGeometry(rad, 10, 10);
   let material = new THREE.MeshBasicMaterial({ color: col });
   estrella = new THREE.Mesh(geometry, material);
-  scene.add(estrella);
+  // scene.add(estrella);
 }
 
 function Planeta(radio, dist, vel, col, f1, f2) {
@@ -121,23 +127,30 @@ function animationLoop() {
   requestAnimationFrame(animationLoop);
 
   //Modifica rotación de todos los objetos
-  for (let object of Planetas) {
-    object.position.x =
-      Math.cos(timestamp * object.userData.speed) *
-      object.userData.f1 *
-      object.userData.dist;
-    object.position.y =
-      Math.sin(timestamp * object.userData.speed) *
-      object.userData.f2 *
-      object.userData.dist;
-  }
+  // for (let object of Planetas) {
+  //   object.position.x =
+  //     Math.cos(timestamp * object.userData.speed) *
+  //     object.userData.f1 *
+  //     object.userData.dist;
+  //   object.position.y =
+  //     Math.sin(timestamp * object.userData.speed) *
+  //     object.userData.f2 *
+  //     object.userData.dist;
+  // }
 
-  for (let object of Lunas) {
-    object.position.x =
-      Math.cos(timestamp * object.userData.speed) * object.userData.dist;
-    object.position.y =
-      Math.sin(timestamp * object.userData.speed) * object.userData.dist;
-  }
+  // for (let object of Lunas) {
+  //   object.position.x =
+  //     Math.cos(timestamp * object.userData.speed) * object.userData.dist;
+  //   object.position.y =
+  //     Math.sin(timestamp * object.userData.speed) * object.userData.dist;
+  // }
+  // 
+  sun.animate(timestamp, 0, 0);
+  // earth.mesh.position.x = Math.cos(timestamp * 0.1) * 2;
+  // earth.mesh.position.y = Math.sin(timestamp * 0.1) * 2;
+  
+  // moon.mesh.position.x = earth.mesh.position.x + Math.cos(timestamp * 0.5) * 1;
+  // moon.mesh.position.y = earth.mesh.position.y + Math.sin(timestamp * 0.5) * 1;
 
   renderer.render(scene, camera);
 }
