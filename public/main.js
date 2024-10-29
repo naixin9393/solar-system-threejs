@@ -1,23 +1,30 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 import { CelestialBody } from "./celestial-body.js";
 import { CELESTIAL_BODIES } from "./celestial-body-constants.js";
 
+import { flyControls, mapControls } from "./cameraControls.js";
+
 import FakeGlowMaterial from "./fake-glow.js";
 
-let scene;
-let renderer;
-let camera;
-let info;
-let grid;
-let t0 = 0;
 let accglobal = 0.001;
-let timestamp;
-let camcontrols;
+let camera;
+let cameraFolder;
+let cameraToggleControl;
+let flyCameraMode;
+let cameraControls;
+let flyCameraControls;
+let mapCameraControls;
+let grid;
+let gui;
+let info;
 let lightAmbient;
 let lightPoint;
+let renderer;
+let scene;
+let t0 = 0;
+let timestamp;
 
 // Star
 const SUN = CELESTIAL_BODIES.SUN;
@@ -47,9 +54,10 @@ animationLoop();
 function init() {
   setTitle("Solar System");
   setCamera();
-  //setGrid();
+  // setGrid();
   setSolarSystem();
   setLight();
+  setControls();
   setGui();
   t0 = Date.now();
 }
@@ -60,6 +68,8 @@ function animationLoop() {
   requestAnimationFrame(animationLoop);
 
   SUN.animate(timestamp, 0, 0);
+
+  cameraControls.update(1);
 
   renderer.render(scene, camera);
 }
@@ -102,16 +112,29 @@ function setTitle(title) {
 }
 
 function setGui() {
-  const gui = new GUI();
-  const ambientLightFolder = gui.addFolder("Luz ambiente");
-  ambientLightFolder
-    .add(lightAmbient, "intensity", 0, 1, 0.1)
-    .name("Intensidad");
-  ambientLightFolder
-    .addColor(lightAmbient, "color")
-    .name("Color")
-    .onChange((value) => lightAmbient.color.set(value));
-  ambientLightFolder.open();
+  gui = new GUI();
+  cameraFolder = gui.addFolder("Camera");
+  cameraToggleControl = cameraFolder
+    .add(flyCameraMode, "enabled")
+    .name("Fly mode")
+    .onChange(() => {
+      cameraControls.enabled = false;
+      cameraControls =
+        cameraControls === mapCameraControls
+          ? flyCameraControls
+          : mapCameraControls;
+      cameraControls.enabled = true;
+    })
+    .listen();
+  // Create a new div element for the instruction text
+  const instructionText = document.createElement("div");
+  instructionText.style.marginTop = "10px";
+  instructionText.style.color = "#fff";
+  instructionText.style.fontFamily = "Monospace";
+  instructionText.innerHTML = "Press spacebar or click here to toggle camera";
+
+  // Append the instruction text to the GUI
+  gui.domElement.appendChild(instructionText);
 }
 
 function setCamera() {
@@ -122,17 +145,22 @@ function setCamera() {
     0.1,
     1000
   );
-  camera.position.set(0, 0, 10);
+  camera.position.set(0, 0, 5);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  camcontrols = new OrbitControls(camera, renderer.domElement);
+  mapCameraControls = mapControls(camera, renderer.domElement);
+  flyCameraControls = flyControls(camera, renderer.domElement);
+  cameraControls = mapCameraControls;
+  flyCameraMode = {
+    enabled: false,
+  };
 }
 
 function setLight() {
-  lightAmbient = new THREE.AmbientLight(0xffffff, 0.3);
+  lightAmbient = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(lightAmbient);
 
   lightPoint = new THREE.PointLight(0xffffff, 1, 0, 1);
@@ -167,4 +195,24 @@ function setSun() {
   const pointLight = new THREE.PointLight(0xffffff, 5, 0, 0.3);
   pointLight.position.set(0, 0, 0);
   scene.add(pointLight);
+}
+
+function setControls() {
+  window.addEventListener("keydown", (event) => {
+    switch (event.key) {
+      case " ":
+        toggleCamera(camera, renderer.domElement);
+        break;
+    }
+  });
+}
+
+function toggleCamera() {
+  cameraControls.enabled = false;
+  cameraControls =
+    cameraControls === mapCameraControls
+      ? flyCameraControls
+      : mapCameraControls;
+  cameraControls.enabled = true;
+  cameraToggleControl.object.enabled = !cameraToggleControl.object.enabled;
 }
