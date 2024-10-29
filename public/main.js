@@ -145,7 +145,7 @@ function setCamera() {
     0.1,
     1000
   );
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, 2, 2);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);

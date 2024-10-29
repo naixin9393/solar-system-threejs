@@ -45,9 +45,14 @@ export class CelestialBody {
             0,
             this.majorAxis * this.distance,
             this.minorAxis * this.distance,
+            0,
+            2 * Math.PI,
+            false,
         );
-        let points = curve.getPoints(100);
-        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const points = curve.getPoints(100);
+
+        const xzPoints = points.map(point => new THREE.Vector3(point.x, 0, point.y));
+        const geometry = new THREE.BufferGeometry().setFromPoints(xzPoints);
         let material = new THREE.LineBasicMaterial({ color: 0xffffff });
         this.orbit = new THREE.Line(geometry, material);
     }
@@ -61,17 +66,17 @@ export class CelestialBody {
         }
     }
     
-    animate(timestamp, initialX, initialY) {
-        this.mesh.position.x = initialX + Math.sin(timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
-        this.mesh.position.y = initialY + Math.cos(timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
-        this.label.position.x = initialX + Math.sin(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
-        this.label.position.y = initialY + Math.cos(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
+    animate(timestamp, parentX, parentZ) {
+        this.mesh.position.x = parentX + Math.sin(timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
+        this.mesh.position.z = parentZ + Math.cos(timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
+        this.label.position.x = parentX + Math.sin(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
+        this.label.position.z = parentZ + Math.cos(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
         for (let satellite of this.satellites) {
-            satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.y);
+            satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.z);
         }
         if (this.orbit) {
-            this.orbit.position.x = initialX;
-            this.orbit.position.y = initialY;
+            this.orbit.position.x = parentX;
+            this.orbit.position.z = parentZ;
         }
     }
 }
