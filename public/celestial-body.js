@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 const baseSpeed = 30;
 
@@ -15,7 +15,7 @@ export class CelestialBody {
         this.satellites = []
 
         this.geometry = new THREE.SphereGeometry(radius, 32, 32);
-        this.material = new THREE.MeshBasicMaterial({ color: color });
+        this.material = new THREE.MeshPhongMaterial({ color: color });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         
         this.label = createLabel(name, this.mesh.position);

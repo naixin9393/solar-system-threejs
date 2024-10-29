@@ -1,17 +1,28 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+
 import { CelestialBody } from "./celestial-body.js";
 import { CELESTIAL_BODIES } from "./celestial-body-constants.js";
 
-let scene, renderer;
+import FakeGlowMaterial from "./fake-glow.js";
+
+let scene;
+let renderer;
 let camera;
 let info;
 let grid;
 let t0 = 0;
 let accglobal = 0.001;
 let timestamp;
+let camcontrols;
+let lightAmbient;
+let lightPoint;
 
+// Star
 const SUN = CELESTIAL_BODIES.SUN;
+
+// Planets
 const MERCURY = CELESTIAL_BODIES.MERCURY;
 const VENUS = CELESTIAL_BODIES.VENUS;
 const EARTH = CELESTIAL_BODIES.EARTH;
@@ -36,8 +47,10 @@ animationLoop();
 function init() {
   setTitle("Solar System");
   setCamera();
-  // setGrid();
+  //setGrid();
   setSolarSystem();
+  setLight();
+  setGui();
   t0 = Date.now();
 }
 
@@ -61,16 +74,16 @@ function setSolarSystem() {
   SUN.addSatellite(URANUS);
   SUN.addSatellite(NEPTUNE);
   SUN.addSatellite(PLUTO);
-  
+
   EARTH.addSatellite(MOON);
-  
+
   JUPITER.addSatellite(EUROPA);
 
   SATURN.addSatellite(TITAN);
 
   NEPTUNE.addSatellite(TRITON);
 
-  SUN.addToScene(scene);
+  setSun();
 }
 
 function setTitle(title) {
@@ -88,6 +101,19 @@ function setTitle(title) {
   document.body.appendChild(info);
 }
 
+function setGui() {
+  const gui = new GUI();
+  const ambientLightFolder = gui.addFolder("Luz ambiente");
+  ambientLightFolder
+    .add(lightAmbient, "intensity", 0, 1, 0.1)
+    .name("Intensidad");
+  ambientLightFolder
+    .addColor(lightAmbient, "color")
+    .name("Color")
+    .onChange((value) => lightAmbient.color.set(value));
+  ambientLightFolder.open();
+}
+
 function setCamera() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
@@ -102,7 +128,17 @@ function setCamera() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  let camcontrols = new OrbitControls(camera, renderer.domElement);
+  camcontrols = new OrbitControls(camera, renderer.domElement);
+}
+
+function setLight() {
+  lightAmbient = new THREE.AmbientLight(0xffffff, 0.3);
+  scene.add(lightAmbient);
+
+  lightPoint = new THREE.PointLight(0xffffff, 1, 0, 1);
+  lightPoint.position.set(0, 0, 0);
+  lightPoint.visible = true;
+  scene.add(lightPoint);
 }
 
 function setGrid() {
@@ -110,4 +146,25 @@ function setGrid() {
   grid.geometry.rotateX(Math.PI / 2);
   grid.position.set(0, 0, 0.05);
   scene.add(grid);
+}
+
+function setSun() {
+  const material = new FakeGlowMaterial({
+    falloff: 0.1,
+    glowInternalRadius: 3.0,
+    glowColor: new THREE.Color("#ffffff"),
+    glowSharpness: 0.5,
+    opacity: 1,
+    side: THREE.FrontSide,
+    depthTest: true,
+  });
+
+  SUN.material = material;
+  SUN.mesh = new THREE.Mesh(SUN.geometry, SUN.material);
+
+  SUN.addToScene(scene);
+
+  const pointLight = new THREE.PointLight(0xffffff, 5, 0, 0.3);
+  pointLight.position.set(0, 0, 0);
+  scene.add(pointLight);
 }
