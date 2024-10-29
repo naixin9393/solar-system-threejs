@@ -1,4 +1,5 @@
 import { CelestialBody } from "./celestial-body.js";
+import { TEXTURES } from "./textures.js";
 
 export const CELESTIAL_BODIES = {
   SUN: new CelestialBody({
@@ -19,6 +20,7 @@ export const CELESTIAL_BODIES = {
     period: 88,
     minorAxis: 1,
     majorAxis: 1,
+    texture: TEXTURES.MERCURY,
   }),
 
   VENUS: new CelestialBody({
@@ -34,11 +36,13 @@ export const CELESTIAL_BODIES = {
   EARTH: new CelestialBody({
     name: "Earth",
     radius: scale(10),
-    color: 0x1e90ff,
+    color: 0xffffff,
     distance: scale(1000),
     period: 365,
     minorAxis: 1,
     majorAxis: 1,
+    texture: TEXTURES.EARTH,
+    // texture: new THREE.TextureLoader().load("/assets/textures/earth.jpg"),
   }),
 
   MARS: new CelestialBody({

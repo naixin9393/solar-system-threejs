@@ -3,7 +3,7 @@ import * as THREE from "three";
 const baseSpeed = 30;
 
 export class CelestialBody {
-    constructor({name, radius, color, distance, period, minorAxis, majorAxis}) {
+    constructor({name, radius, color, distance, period, minorAxis, majorAxis, texture=undefined}) {
         this.name = name;
         this.radius = radius;
         this.color = color;
@@ -19,6 +19,10 @@ export class CelestialBody {
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         
         this.label = createLabel(name, this.mesh.position);
+        
+        if (texture != undefined) {
+            this.material.map = texture;
+        }
         
         this.initializeOrbit();
     }
