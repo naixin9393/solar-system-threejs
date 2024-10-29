@@ -3,27 +3,39 @@ import * as THREE from "three";
 const baseSpeed = 30;
 
 export class CelestialBody {
-    constructor({name, radius, color, distance, period, minorAxis, majorAxis, texture=undefined}) {
+    constructor({name, radius, color, distance, orbitalPeriod, spinPeriod, minorAxis, majorAxis,  texture=undefined, textureBump=undefined, textureSpecular=undefined}) {
         this.name = name;
         this.radius = radius;
         this.color = color;
         this.distance = distance;
-        this.period = period;
+        this.orbitalPeriod = orbitalPeriod;
+        this.spinPeriod = spinPeriod;
         this.minorAxis = minorAxis;
         this.majorAxis = majorAxis;
         
         this.satellites = []
 
         this.geometry = new THREE.SphereGeometry(radius, 32, 32);
-        this.material = new THREE.MeshPhongMaterial({ color: color });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
         
-        this.label = createLabel(name, this.mesh.position);
         
         if (texture != undefined) {
             this.material.map = texture;
         }
         
+        if (textureBump != undefined) {
+            this.material.bumpMap = textureBump;
+            this.material.bumpScale = 3;
+        }
+
+        if (textureSpecular != undefined) {
+            this.material.specularMap = textureSpecular;
+            this.material.specular = new THREE.Color('grey');
+        }
+        
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+        this.label = createLabel(name, this.mesh.position);
         this.initializeOrbit();
     }
     
@@ -49,7 +61,7 @@ export class CelestialBody {
             2 * Math.PI,
             false,
         );
-        const points = curve.getPoints(100);
+        const points = curve.getPoints(360);
 
         const xzPoints = points.map(point => new THREE.Vector3(point.x, 0, point.y));
         const geometry = new THREE.BufferGeometry().setFromPoints(xzPoints);
@@ -67,10 +79,11 @@ export class CelestialBody {
     }
     
     animate(timestamp, parentX, parentZ) {
-        this.mesh.position.x = parentX + Math.sin(timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
-        this.mesh.position.z = parentZ + Math.cos(timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
-        this.label.position.x = parentX + Math.sin(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.majorAxis;
-        this.label.position.z = parentZ + Math.cos(Math.PI / 180 + timestamp * baseSpeed / this.period) * this.distance * this.minorAxis;
+        this.mesh.position.x = parentX + Math.sin(timestamp * baseSpeed / this.orbitalPeriod) * this.distance * this.majorAxis;
+        this.mesh.position.z = parentZ + Math.cos(timestamp * baseSpeed / this.orbitalPeriod) * this.distance * this.minorAxis;
+        this.label.position.x = parentX + Math.sin(Math.PI / 180 + timestamp * baseSpeed / this.orbitalPeriod) * this.distance * this.majorAxis;
+        this.label.position.z = parentZ + Math.cos(Math.PI / 180 + timestamp * baseSpeed / this.orbitalPeriod) * this.distance * this.minorAxis;
+        this.mesh.rotation.y = timestamp / this.spinPeriod * 50;
         for (let satellite of this.satellites) {
             satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.z);
         }

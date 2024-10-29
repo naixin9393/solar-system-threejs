@@ -8,7 +8,7 @@ import { flyControls, mapControls } from "./cameraControls.js";
 
 import FakeGlowMaterial from "./fake-glow.js";
 
-let accglobal = 0.001;
+let accglobal = 0.0003;
 let camera;
 let cameraFolder;
 let cameraToggleControl;
@@ -21,9 +21,11 @@ let gui;
 let info;
 let lightAmbient;
 let lightPoint;
+let paused = false;
+let pauseTime;
 let renderer;
 let scene;
-let t0 = 0;
+let t0;
 let timestamp;
 
 // Star
@@ -59,11 +61,16 @@ function init() {
   setLight();
   setControls();
   setGui();
+  pauseTime = 0;
   t0 = Date.now();
 }
 
 function animationLoop() {
-  timestamp = (Date.now() - t0) * accglobal;
+  if (paused) {
+    timestamp = pauseTime;
+  } else {
+    timestamp = (Date.now() - t0) * accglobal;
+  }
 
   requestAnimationFrame(animationLoop);
 
@@ -131,7 +138,7 @@ function setGui() {
   instructionText.style.marginTop = "10px";
   instructionText.style.color = "#fff";
   instructionText.style.fontFamily = "Monospace";
-  instructionText.innerHTML = "Press spacebar or click here to toggle camera";
+  instructionText.innerHTML = "Press T or click here to toggle camera";
 
   // Append the instruction text to the GUI
   gui.domElement.appendChild(instructionText);
@@ -200,8 +207,17 @@ function setSun() {
 function setControls() {
   window.addEventListener("keydown", (event) => {
     switch (event.key) {
-      case " ":
+      case "t":
         toggleCamera(camera, renderer.domElement);
+        break;
+      
+      case " ":
+        if (paused) {
+          t0 = Date.now() - pauseTime / accglobal;
+        } else {
+          pauseTime = (Date.now() - t0) * accglobal;
+        }
+        paused = !paused;
         break;
     }
   });
