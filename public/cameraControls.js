@@ -4,9 +4,9 @@ import { MapControls } from 'three/addons/controls/MapControls.js'
 
 export function flyControls(camera, dom) {
     const controls = new FlyControls(camera, dom);
-    controls.movementSpeed = 0.01;
+    controls.movementSpeed = 0.1;
     controls.domElement = dom;
-    controls.rollSpeed = 0.001;
+    controls.rollSpeed = 0.004;
     controls.autoForward = false;
     controls.dragToLook = false;
     return controls;

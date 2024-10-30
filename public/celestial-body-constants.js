@@ -1,15 +1,17 @@
 import { CelestialBody } from "./celestial-body.js";
 import { TEXTURES, BUMP, SPECULAR } from "./textures.js";
+import { CURIOSITY } from "./label.js";
 
 export const CELESTIAL_BODIES = {
   SUN: new CelestialBody({
     name: "Sun",
-    radius: scale(300),
+    radius: scale(100),
     distance: 0,
     orbitalPeriod: 1,
     spinPeriod: 1,
-    minorAxis: 0,
-    majorAxis: 0,
+    minorAxis: 1,
+    majorAxis: 1,
+    note: CURIOSITY.SUN,
   }),
 
   MERCURY: new CelestialBody({
@@ -18,10 +20,11 @@ export const CELESTIAL_BODIES = {
     distance: scale(350),
     orbitalPeriod: 88,
     spinPeriod: 59,
-    minorAxis: 0.38,
-    majorAxis: 0.39,
+    minorAxis: 0.97,
+    majorAxis: 1,
     texture: TEXTURES.MERCURY,
     textureBump: BUMP.MERCURY,
+    note: CURIOSITY.MERCURY,
   }),
 
   VENUS: new CelestialBody({
@@ -30,10 +33,11 @@ export const CELESTIAL_BODIES = {
     distance: scale(730),
     orbitalPeriod: 225,
     spinPeriod: -243,
-    minorAxis: 0.72,
-    majorAxis: 0.72,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.VENUS,
     textureBump: BUMP.VENUS,
+    note: CURIOSITY.VENUS,
   }),
 
   EARTH: new CelestialBody({
@@ -48,7 +52,7 @@ export const CELESTIAL_BODIES = {
     texture: TEXTURES.EARTH,
     textureBump: BUMP.EARTH,
     textureSpecular: SPECULAR.EARTH,
-    // texture: new THREE.TextureLoader().load("/assets/textures/earth.jpg"),
+    note: CURIOSITY.EARTH,
   }),
 
   MARS: new CelestialBody({
@@ -57,10 +61,11 @@ export const CELESTIAL_BODIES = {
     distance: scale(1550),
     orbitalPeriod: 687,
     spinPeriod: 1,
-    minorAxis: 1.5,
-    majorAxis: 1.5,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.MARS,
     textureBump: BUMP.MARS,
+    note: CURIOSITY.MARS,
   }),
 
   JUPITER: new CelestialBody({
@@ -69,9 +74,10 @@ export const CELESTIAL_BODIES = {
     distance: scale(3000),
     orbitalPeriod: 4332,
     spinPeriod: 0.41,
-    minorAxis: 5.2,
-    majorAxis: 5.2,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.JUPITER,
+    note: CURIOSITY.JUPITER,
   }),
 
   SATURN: new CelestialBody({
@@ -80,20 +86,22 @@ export const CELESTIAL_BODIES = {
     distance: scale(5000),
     orbitalPeriod: 10759,
     spinPeriod: 0.45,
-    minorAxis: 9.5,
-    majorAxis: 9.5,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.SATURN,
+    note: CURIOSITY.SATURN,
   }),
 
   URANUS: new CelestialBody({
     name: "Uranus",
     radius: scale(40),
-    distance: scale(7000),
+    distance: scale(4000),
     orbitalPeriod: 30687,
     spinPeriod: -0.72,
-    minorAxis: 19.2,
-    majorAxis: 19.2,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.URANUS,
+    note: CURIOSITY.URANUS,
   }),
 
   NEPTUNE: new CelestialBody({
@@ -102,9 +110,10 @@ export const CELESTIAL_BODIES = {
     distance: scale(10000),
     orbitalPeriod: 60190,
     spinPeriod: 0.67,
-    minorAxis: 30.05,
-    majorAxis: 30.05,
+    minorAxis: 1,
+    majorAxis: 1,
     texture: TEXTURES.NEPTUNE,
+    note: CURIOSITY.NEPTUNE,
   }),
 
   PLUTO: new CelestialBody({
@@ -113,8 +122,9 @@ export const CELESTIAL_BODIES = {
     distance: scale(12000),
     orbitalPeriod: 90560,
     spinPeriod: -6.39,
-    minorAxis: 39.48,
-    majorAxis: 39.48,
+    minorAxis: 1,
+    majorAxis: 1,
+    note: CURIOSITY.PLUTO,
   }),
 
   MOON: new CelestialBody({
@@ -127,6 +137,7 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.MOON,
     textureBump: BUMP.MOON,
+    note: CURIOSITY.MOON,
   }),
 
   EUROPA: new CelestialBody({
@@ -138,6 +149,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.EUROPA,
+    note: CURIOSITY.EUROPA,
   }),
 
   TITAN: new CelestialBody({
@@ -148,7 +160,8 @@ export const CELESTIAL_BODIES = {
     spinPeriod: 16,
     minorAxis: 1,
     majorAxis: 1,
-    TEXTURES: TEXTURES.TITAN,
+    texture: TEXTURES.TITAN,
+    note: CURIOSITY.TITAN,
   }),
 
   TRITON: new CelestialBody({
@@ -159,10 +172,11 @@ export const CELESTIAL_BODIES = {
     spinPeriod: -6,
     minorAxis: 1,
     majorAxis: 1,
-    TEXTURES: TEXTURES.TRITON,
+    texture: TEXTURES.TRITON,
+    note: CURIOSITY.TRITON,
   }),
 };
 
 function scale(distance) {
-  return distance / 100;
+  return distance / 40;
 }

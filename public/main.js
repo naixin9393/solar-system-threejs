@@ -8,6 +8,13 @@ import { flyControls, mapControls } from "./cameraControls.js";
 
 import FakeGlowMaterial from "./fake-glow.js";
 
+import { CURIOSITY } from "./label.js";
+
+import {
+  CSS2DRenderer,
+  CSS2DObject,
+} from "https://cdn.jsdelivr.net/npm/three/examples/jsm/renderers/CSS2DRenderer.js";
+
 let accglobal = 0.0003;
 let camera;
 let cameraFolder;
@@ -27,6 +34,14 @@ let renderer;
 let scene;
 let t0;
 let timestamp;
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = "absolute";
+labelRenderer.domElement.style.top = "0";
+labelRenderer.domElement.style.pointerEvents = "none";
+labelRenderer.domElement.style.font = "12px Monospace";
+labelRenderer.domElement.style.color = "#fff";
+document.body.appendChild(labelRenderer.domElement);
 
 // Star
 const SUN = CELESTIAL_BODIES.SUN;
@@ -54,7 +69,7 @@ init();
 animationLoop();
 
 function init() {
-  setTitle("Solar System");
+  setTitle("Solar System | 1s = 5-6 days");
   setCamera();
   // setGrid();
   setSolarSystem();
@@ -74,11 +89,12 @@ function animationLoop() {
 
   requestAnimationFrame(animationLoop);
 
-  SUN.animate(timestamp, 0, 0);
+  SUN.animate(timestamp, 0, 0, camera);
 
   cameraControls.update(1);
 
   renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
 }
 
 function setSolarSystem() {
@@ -133,15 +149,13 @@ function setGui() {
       cameraControls.enabled = true;
     })
     .listen();
-  // Create a new div element for the instruction text
   const instructionText = document.createElement("div");
   instructionText.style.marginTop = "10px";
   instructionText.style.color = "#fff";
   instructionText.style.fontFamily = "Monospace";
   instructionText.innerHTML = "Press T or click here to toggle camera";
 
-  // Append the instruction text to the GUI
-  gui.domElement.appendChild(instructionText);
+  cameraToggleControl.domElement.appendChild(instructionText);
 }
 
 function setCamera() {
@@ -152,7 +166,7 @@ function setCamera() {
     0.1,
     1000
   );
-  camera.position.set(0, 2, 2);
+  camera.position.set(10, 5, 30);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -186,20 +200,21 @@ function setGrid() {
 function setSun() {
   const material = new FakeGlowMaterial({
     falloff: 0.1,
-    glowInternalRadius: 3.0,
-    glowColor: new THREE.Color("#ffffff"),
+    glowInternalRadius: 13.0,
+    glowColor: new THREE.Color("#fafafa"),
     glowSharpness: 0.5,
     opacity: 1,
-    side: THREE.FrontSide,
-    depthTest: true,
+    // side: THREE.FrontSide,
+    // depthTest: true,
   });
 
   SUN.material = material;
   SUN.mesh = new THREE.Mesh(SUN.geometry, SUN.material);
+  SUN.createLabel(CURIOSITY.SUN, SUN.radius * 0.7);
 
   SUN.addToScene(scene);
 
-  const pointLight = new THREE.PointLight(0xffffff, 5, 0, 0.3);
+  const pointLight = new THREE.PointLight(0xffffff, 5, 0, 0.4);
   pointLight.position.set(0, 0, 0);
   scene.add(pointLight);
 }
@@ -210,7 +225,7 @@ function setControls() {
       case "t":
         toggleCamera(camera, renderer.domElement);
         break;
-      
+
       case " ":
         if (paused) {
           t0 = Date.now() - pauseTime / accglobal;
