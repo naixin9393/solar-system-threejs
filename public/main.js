@@ -4,7 +4,7 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { CelestialBody } from "./celestial-body.js";
 import { CELESTIAL_BODIES } from "./celestial-body-constants.js";
 
-import { flyControls, mapControls } from "./cameraControls.js";
+import { flyControls, mapControls } from "./camera-controls.js";
 
 import FakeGlowMaterial from "./fake-glow.js";
 
@@ -16,20 +16,25 @@ import {
 } from "https://cdn.jsdelivr.net/npm/three/examples/jsm/renderers/CSS2DRenderer.js";
 
 let accglobal = 0.0003;
+let addedObjects = [];
+let addObjectControls;
 let camera;
 let cameraFolder;
 let cameraToggleControl;
-let flyCameraMode;
+let cameraMode;
 let cameraControls;
+let cancelAddObjectControls;
+let confirmAddObjectControls;
 let flyCameraControls;
 let mapCameraControls;
-let grid;
 let gui;
 let info;
 let lightAmbient;
 let lightPoint;
 let paused = false;
 let pauseTime;
+let plane;
+let raycaster = new THREE.Raycaster();
 let renderer;
 let scene;
 let t0;
@@ -70,8 +75,8 @@ animationLoop();
 
 function init() {
   setTitle("Solar System | 1s = 5-6 days");
+  setPlane();
   setCamera();
-  // setGrid();
   setSolarSystem();
   setLight();
   setControls();
@@ -81,20 +86,18 @@ function init() {
 }
 
 function animationLoop() {
+  requestAnimationFrame(animationLoop);
+  cameraControls.update(1);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
   if (paused) {
     timestamp = pauseTime;
-  } else {
-    timestamp = (Date.now() - t0) * accglobal;
+    return;
   }
-
-  requestAnimationFrame(animationLoop);
+  timestamp = (Date.now() - t0) * accglobal;
 
   SUN.animate(timestamp, 0, 0, camera);
 
-  cameraControls.update(1);
-
-  renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
 }
 
 function setSolarSystem() {
@@ -134,12 +137,77 @@ function setTitle(title) {
   document.body.appendChild(info);
 }
 
+
 function setGui() {
   gui = new GUI();
+  setCameraGui(gui);
+  setShortcutsGui(gui);
+  setObjectGui(gui);
+}
+
+function setObjectGui(gui) {
+  const celestialBodiesControl = gui.addFolder("Celestial Bodies");
+  addObjectControls = celestialBodiesControl.add({ addObject }, "addObject").name("Add Object");
+  confirmAddObjectControls = celestialBodiesControl.add({ confirmAddObject }, "confirmAddObject").name("Confirm Add Object").disable();
+  cancelAddObjectControls = celestialBodiesControl.add({ cancelAddObject }, "cancelAddObject").name("Cancel Add Object").disable();
+}
+
+function addObject() {
+  togglePause();
+  cameraControls.enabled = false;
+  addObjectControls.disable();
+  cancelAddObjectControls.enable();
+  window.addEventListener("mousedown", addObjectEvent);
+}
+
+function confirmAddObject() {
+  window.removeEventListener("mousedown", addObjectEvent);
+  cancelAddObjectControls.disable();
+  addObjectControls.enable();
+  confirmAddObjectControls.disable();
+}
+
+function cancelAddObject() {
+  togglePause();
+  cameraControls.enabled = true;
+  cancelAddObjectControls.disable();
+  addObjectControls.enable();
+  confirmAddObjectControls.disable();
+  window.removeEventListener("mousedown", addObjectEvent);
+}
+
+function addObjectEvent() {
+  const mouse = {
+    x: (event.clientX / renderer.domElement.clientWidth) * 2 - 1,
+    y: -(event.clientY / renderer.domElement.clientHeight) * 2 + 1,
+  };
+
+  //Intersección, define rayo
+  raycaster.setFromCamera(mouse, camera);
+  
+  const intersects = raycaster.intersectObject(plane);
+
+  if (intersects.length > 0) {
+    confirmAddObjectControls.enable();
+    window.removeEventListener("mousedown", addObjectEvent);
+    const intersectionPoint = intersects[0].point;
+    
+    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.copy(intersectionPoint);
+    scene.add(sphere);
+  } else {
+    console.log("Not Intersected");
+  }
+  console.log(intersects);
+}
+
+function setCameraGui(gui) {
   cameraFolder = gui.addFolder("Camera");
   cameraToggleControl = cameraFolder
-    .add(flyCameraMode, "enabled")
-    .name("Fly mode")
+    .add(cameraMode, "mode" , ["Fly", "Map"])
+    .name("Camera mode: ")
     .onChange(() => {
       cameraControls.enabled = false;
       cameraControls =
@@ -149,17 +217,20 @@ function setGui() {
       cameraControls.enabled = true;
     })
     .listen();
-  const instructionText = document.createElement("div");
-  instructionText.style.marginTop = "10px";
-  instructionText.style.color = "#fff";
-  instructionText.style.fontFamily = "Monospace";
-  instructionText.innerHTML = "Press T or click here to toggle camera";
-
-  cameraToggleControl.domElement.appendChild(instructionText);
 }
 
+function setShortcutsGui(gui) {
+  let shortcutsFolder = gui.addFolder("Instructions");
+  let shortcuts = {
+    "Toggle Camera Mode": "T",
+    "Pause / Resume": "Space",
+  }
+  shortcutsFolder.add(shortcuts, "Toggle Camera Mode").disable();
+  shortcutsFolder.add(shortcuts, "Pause / Resume").disable();
+}
+
+
 function setCamera() {
-  scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -175,8 +246,8 @@ function setCamera() {
   mapCameraControls = mapControls(camera, renderer.domElement);
   flyCameraControls = flyControls(camera, renderer.domElement);
   cameraControls = mapCameraControls;
-  flyCameraMode = {
-    enabled: false,
+  cameraMode = {
+    mode: "Map",
   };
 }
 
@@ -190,11 +261,17 @@ function setLight() {
   scene.add(lightPoint);
 }
 
-function setGrid() {
-  grid = new THREE.GridHelper(20, 40);
-  grid.geometry.rotateX(Math.PI / 2);
-  grid.position.set(0, 0, 0.05);
-  scene.add(grid);
+function setPlane() {
+  scene = new THREE.Scene();
+  let geometry = new THREE.PlaneGeometry(1000, 1000);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide,
+  });
+  plane = new THREE.Mesh(geometry, material);
+  plane.rotation.x = Math.PI / 2;
+  plane.visible = false;
+  scene.add(plane);
 }
 
 function setSun() {
@@ -204,8 +281,8 @@ function setSun() {
     glowColor: new THREE.Color("#fafafa"),
     glowSharpness: 0.5,
     opacity: 1,
-    // side: THREE.FrontSide,
-    // depthTest: true,
+    side: THREE.FrontSide,
+    depthTest: true,
   });
 
   SUN.material = material;
@@ -227,15 +304,19 @@ function setControls() {
         break;
 
       case " ":
-        if (paused) {
-          t0 = Date.now() - pauseTime / accglobal;
-        } else {
-          pauseTime = (Date.now() - t0) * accglobal;
-        }
-        paused = !paused;
+        togglePause();
         break;
     }
   });
+}
+
+function togglePause() {
+  if (paused) {
+    t0 = Date.now() - pauseTime / accglobal;
+  } else {
+    pauseTime = (Date.now() - t0) * accglobal;
+  }
+  paused = !paused;
 }
 
 function toggleCamera() {
@@ -245,5 +326,5 @@ function toggleCamera() {
       ? flyCameraControls
       : mapCameraControls;
   cameraControls.enabled = true;
-  cameraToggleControl.object.enabled = !cameraToggleControl.object.enabled;
+  cameraToggleControl.object.mode = cameraControls === mapCameraControls ? "Map" : "Fly";
 }
