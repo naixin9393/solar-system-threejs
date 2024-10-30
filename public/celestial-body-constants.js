@@ -1,6 +1,6 @@
 import { CelestialBody } from "./celestial-body.js";
 import { TEXTURES, BUMP, SPECULAR } from "./textures.js";
-import { CURIOSITY } from "./label.js";
+import { LABEL } from "./label.js";
 
 export const CELESTIAL_BODIES = {
   SUN: new CelestialBody({
@@ -11,7 +11,7 @@ export const CELESTIAL_BODIES = {
     spinPeriod: 1,
     minorAxis: 1,
     majorAxis: 1,
-    note: CURIOSITY.SUN,
+    label: LABEL.SUN,
   }),
 
   MERCURY: new CelestialBody({
@@ -24,7 +24,7 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.MERCURY,
     textureBump: BUMP.MERCURY,
-    note: CURIOSITY.MERCURY,
+    label: LABEL.MERCURY,
   }),
 
   VENUS: new CelestialBody({
@@ -37,7 +37,7 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.VENUS,
     textureBump: BUMP.VENUS,
-    note: CURIOSITY.VENUS,
+    label: LABEL.VENUS,
   }),
 
   EARTH: new CelestialBody({
@@ -52,7 +52,7 @@ export const CELESTIAL_BODIES = {
     texture: TEXTURES.EARTH,
     textureBump: BUMP.EARTH,
     textureSpecular: SPECULAR.EARTH,
-    note: CURIOSITY.EARTH,
+    label: LABEL.EARTH,
   }),
 
   MARS: new CelestialBody({
@@ -65,7 +65,7 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.MARS,
     textureBump: BUMP.MARS,
-    note: CURIOSITY.MARS,
+    label: LABEL.MARS,
   }),
 
   JUPITER: new CelestialBody({
@@ -77,7 +77,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.JUPITER,
-    note: CURIOSITY.JUPITER,
+    label: LABEL.JUPITER,
   }),
 
   SATURN: new CelestialBody({
@@ -89,7 +89,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.SATURN,
-    note: CURIOSITY.SATURN,
+    label: LABEL.SATURN,
   }),
 
   URANUS: new CelestialBody({
@@ -101,7 +101,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.URANUS,
-    note: CURIOSITY.URANUS,
+    label: LABEL.URANUS,
   }),
 
   NEPTUNE: new CelestialBody({
@@ -113,7 +113,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.NEPTUNE,
-    note: CURIOSITY.NEPTUNE,
+    label: LABEL.NEPTUNE,
   }),
 
   PLUTO: new CelestialBody({
@@ -124,7 +124,7 @@ export const CELESTIAL_BODIES = {
     spinPeriod: -6.39,
     minorAxis: 1,
     majorAxis: 1,
-    note: CURIOSITY.PLUTO,
+    label: LABEL.PLUTO,
   }),
 
   MOON: new CelestialBody({
@@ -137,7 +137,7 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.MOON,
     textureBump: BUMP.MOON,
-    note: CURIOSITY.MOON,
+    label: LABEL.MOON,
   }),
 
   EUROPA: new CelestialBody({
@@ -149,7 +149,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.EUROPA,
-    note: CURIOSITY.EUROPA,
+    label: LABEL.EUROPA,
   }),
 
   TITAN: new CelestialBody({
@@ -161,7 +161,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.TITAN,
-    note: CURIOSITY.TITAN,
+    label: LABEL.TITAN,
   }),
 
   TRITON: new CelestialBody({
@@ -173,7 +173,7 @@ export const CELESTIAL_BODIES = {
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.TRITON,
-    note: CURIOSITY.TRITON,
+    label: LABEL.TRITON,
   }),
 };
 

@@ -15,7 +15,7 @@ export class CelestialBody {
     texture = undefined,
     textureBump = undefined,
     textureSpecular = undefined,
-    note = undefined,
+    label = undefined,
   }) {
     this.name = name;
     this.radius = radius;
@@ -46,7 +46,7 @@ export class CelestialBody {
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-    this.createLabel(note, this.radius + 0.7);
+    this.createLabel(label, this.radius + 0.7);
 
     this.initializeOrbit();
   }
@@ -105,7 +105,7 @@ export class CelestialBody {
       
     const distanceToCamera = this.mesh.position.distanceTo(camera.position);
     const scaleFactor = Math.min(1 / (distanceToCamera * distanceToCamera), 0.1);
-      this.note.element.style.fontSize = `${scaleFactor * 180}px`;
+      this.label.element.style.fontSize = `${scaleFactor * 180}px`;
 
     for (let satellite of this.satellites) {
       satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.z, camera);
@@ -125,8 +125,8 @@ export class CelestialBody {
     p.textContent = text;
     p.style.whiteSpace = "pre-line";
     labelDiv.appendChild(p);
-    this.note = new CSS2DObject(labelDiv);
-    this.note.position.y = y;
-    this.mesh.add(this.note);
+    this.label= new CSS2DObject(labelDiv);
+    this.label.position.y = y;
+    this.mesh.add(this.label);
   }
 }

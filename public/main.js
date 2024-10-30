@@ -8,7 +8,7 @@ import { flyControls, mapControls } from "./cameraControls.js";
 
 import FakeGlowMaterial from "./fake-glow.js";
 
-import { CURIOSITY } from "./label.js";
+import { LABEL } from "./label.js";
 
 import {
   CSS2DRenderer,
@@ -210,7 +210,7 @@ function setSun() {
 
   SUN.material = material;
   SUN.mesh = new THREE.Mesh(SUN.geometry, SUN.material);
-  SUN.createLabel(CURIOSITY.SUN, SUN.radius * 0.7);
+  SUN.createLabel(LABEL.SUN, SUN.radius * 0.7);
 
   SUN.addToScene(scene);
 
