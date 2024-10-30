@@ -17,6 +17,16 @@ import {
 
 let accglobal = 0.0003;
 let addedObjects = [];
+const defaultObjectProperties = {
+  name: "Celestial Body",
+  radius: 0.2,
+  distance: 12,
+  orbitalPeriod: 100,
+  spinPeriod: 1,
+  minorAxis: 1,
+  majorAxis: 1,
+  label: "Celestial Body",
+};
 let addObjectControls;
 let camera;
 let cameraFolder;
@@ -27,8 +37,10 @@ let cancelAddObjectControls;
 let confirmAddObjectControls;
 let flyCameraControls;
 let mapCameraControls;
+let newObjectFolder;
 let gui;
 let info;
+let inAddingMode = false;
 let lightAmbient;
 let lightPoint;
 let paused = false;
@@ -92,12 +104,10 @@ function animationLoop() {
   labelRenderer.render(scene, camera);
   if (paused) {
     timestamp = pauseTime;
-    return;
+  } else {
+    timestamp = (Date.now() - t0) * accglobal;
   }
-  timestamp = (Date.now() - t0) * accglobal;
-
   SUN.animate(timestamp, 0, 0, camera);
-
 }
 
 function setSolarSystem() {
@@ -137,7 +147,6 @@ function setTitle(title) {
   document.body.appendChild(info);
 }
 
-
 function setGui() {
   gui = new GUI();
   setCameraGui(gui);
@@ -147,9 +156,35 @@ function setGui() {
 
 function setObjectGui(gui) {
   const celestialBodiesControl = gui.addFolder("Celestial Bodies");
-  addObjectControls = celestialBodiesControl.add({ addObject }, "addObject").name("Add Object");
-  confirmAddObjectControls = celestialBodiesControl.add({ confirmAddObject }, "confirmAddObject").name("Confirm Add Object").disable();
-  cancelAddObjectControls = celestialBodiesControl.add({ cancelAddObject }, "cancelAddObject").name("Cancel Add Object").disable();
+  addObjectControls = celestialBodiesControl
+    .add({ addObject }, "addObject")
+    .name("Add Object");
+  confirmAddObjectControls = celestialBodiesControl
+    .add({ confirmAddObject }, "confirmAddObject")
+    .name("Confirm Add Object")
+    .disable();
+  cancelAddObjectControls = celestialBodiesControl
+    .add({ cancelAddObject }, "cancelAddObject")
+    .name("Cancel Add Object")
+    .disable();
+}
+
+function createNewObjectFolder(object) {
+  let folder = gui.addFolder("Properties");
+  folder.add(object, "name").name("Name").onChange((value) => {
+    object.createLabel(value, object.radius + 0.7);
+  })
+  folder.add(object, "radius", 0.1, 4).name("Radius").onChange(() => {
+    object.updateMesh(scene);
+  })
+  folder.add(object, "distance", 5, 80).name("Distance").onChange(() => {
+    object.updateOrbit(scene);
+  })
+  folder.add(object, "orbitalPeriod").name("Orbital Period");
+  folder.add(object, "spinPeriod").name("Spin Period");
+  folder.add(object, "minorAxis", 0.5, 4).name("Minor Axis").onChange(() => object.updateOrbit(scene));
+  folder.add(object, "majorAxis", 0.5, 4).name("Major Axis").onChange(() => object.updateOrbit(scene));
+  return folder;
 }
 
 function addObject() {
@@ -161,19 +196,26 @@ function addObject() {
 }
 
 function confirmAddObject() {
+  togglePause();
   window.removeEventListener("mousedown", addObjectEvent);
   cancelAddObjectControls.disable();
   addObjectControls.enable();
   confirmAddObjectControls.disable();
+  inAddingMode = false;
 }
 
 function cancelAddObject() {
   togglePause();
+  if (inAddingMode) {
+    addedObjects.pop().removeFromScene(scene);
+    newObjectFolder.destroy();
+  }
   cameraControls.enabled = true;
   cancelAddObjectControls.disable();
   addObjectControls.enable();
   confirmAddObjectControls.disable();
   window.removeEventListener("mousedown", addObjectEvent);
+  inAddingMode = false;
 }
 
 function addObjectEvent() {
@@ -181,32 +223,36 @@ function addObjectEvent() {
     x: (event.clientX / renderer.domElement.clientWidth) * 2 - 1,
     y: -(event.clientY / renderer.domElement.clientHeight) * 2 + 1,
   };
-
-  //Intersección, define rayo
+  cameraControls.enabled = true;
   raycaster.setFromCamera(mouse, camera);
-  
+
   const intersects = raycaster.intersectObject(plane);
 
   if (intersects.length > 0) {
+    let newObject = Object.assign({}, defaultObjectProperties);
+    inAddingMode = true;
     confirmAddObjectControls.enable();
     window.removeEventListener("mousedown", addObjectEvent);
     const intersectionPoint = intersects[0].point;
     
-    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.copy(intersectionPoint);
-    scene.add(sphere);
-  } else {
-    console.log("Not Intersected");
+    let celestialBody = new CelestialBody(newObject);
+    
+    newObjectFolder = createNewObjectFolder(celestialBody);
+
+    SUN.addSatellite(celestialBody);
+
+    celestialBody.addToScene(scene);
+  SUN.animate(timestamp, 0, 0, camera);
+
+    addedObjects.push(celestialBody);
+    console.log(addedObjects)
   }
-  console.log(intersects);
 }
 
 function setCameraGui(gui) {
   cameraFolder = gui.addFolder("Camera");
   cameraToggleControl = cameraFolder
-    .add(cameraMode, "mode" , ["Fly", "Map"])
+    .add(cameraMode, "mode", ["Fly", "Map"])
     .name("Camera mode: ")
     .onChange(() => {
       cameraControls.enabled = false;
@@ -224,11 +270,10 @@ function setShortcutsGui(gui) {
   let shortcuts = {
     "Toggle Camera Mode": "T",
     "Pause / Resume": "Space",
-  }
+  };
   shortcutsFolder.add(shortcuts, "Toggle Camera Mode").disable();
   shortcutsFolder.add(shortcuts, "Pause / Resume").disable();
 }
-
 
 function setCamera() {
   camera = new THREE.PerspectiveCamera(
@@ -326,5 +371,6 @@ function toggleCamera() {
       ? flyCameraControls
       : mapCameraControls;
   cameraControls.enabled = true;
-  cameraToggleControl.object.mode = cameraControls === mapCameraControls ? "Map" : "Fly";
+  cameraToggleControl.object.mode =
+    cameraControls === mapCameraControls ? "Map" : "Fly";
 }

@@ -5,7 +5,7 @@ const baseSpeed = 30;
 
 export class CelestialBody {
   constructor({
-    name,
+    label,
     radius,
     distance,
     orbitalPeriod,
@@ -15,7 +15,7 @@ export class CelestialBody {
     texture = undefined,
     textureBump = undefined,
     textureSpecular = undefined,
-    label = undefined,
+    name
   }) {
     this.name = name;
     this.radius = radius;
@@ -24,23 +24,26 @@ export class CelestialBody {
     this.spinPeriod = spinPeriod;
     this.minorAxis = minorAxis;
     this.majorAxis = majorAxis;
+    this.texture = texture;
+    this.textureBump = textureBump;
+    this.textureSpecular = textureSpecular;
 
     this.satellites = [];
 
-    this.geometry = new THREE.SphereGeometry(radius, 20, 20);
+    this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
     this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
-    if (texture != undefined) {
-      this.material.map = texture;
+    if (this.texture != undefined) {
+      this.material.map = this.texture;
     }
 
-    if (textureBump != undefined) {
-      this.material.bumpMap = textureBump;
+    if (this.textureBump != undefined) {
+      this.material.bumpMap = this.textureBump;
       this.material.bumpScale = 3;
     }
 
-    if (textureSpecular != undefined) {
-      this.material.specularMap = textureSpecular;
+    if (this.textureSpecular != undefined) {
+      this.material.specularMap = this.textureSpecular;
       this.material.specular = new THREE.Color("grey");
     }
 
@@ -79,12 +82,50 @@ export class CelestialBody {
     let material = new THREE.LineBasicMaterial({ color: 0xffffff });
     this.orbit = new THREE.Line(geometry, material);
   }
+  
+  updateOrbit(scene) {
+    scene.remove(this.orbit);
+    this.initializeOrbit();
+    scene.add(this.orbit);
+  }
 
   addToScene(scene) {
     scene.add(this.mesh);
     scene.add(this.orbit);
     for (let satellite of this.satellites) {
       satellite.addToScene(scene);
+    }
+  }
+  
+  updateMesh(scene) {
+    scene.remove(this.mesh);
+    
+    this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
+    this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+
+    if (this.texture != undefined) {
+      this.material.map = this.texture;
+    }
+
+    if (this.textureBump != undefined) {
+      this.material.bumpMap = this.textureBump;
+      this.material.bumpScale = 3;
+    }
+
+    if (this.textureSpecular != undefined) {
+      this.material.specularMap = this.textureSpecular;
+      this.material.specular = new THREE.Color("grey");
+    }
+
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    scene.add(this.mesh);
+  }
+  
+  removeFromScene(scene) {
+    scene.remove(this.mesh);
+    scene.remove(this.orbit);
+    for (let satellite of this.satellites) {
+      satellite.removeFromScene(scene);
     }
   }
 
@@ -118,6 +159,9 @@ export class CelestialBody {
   }
 
   createLabel(text, y) {
+    if (this.label) {
+      this.mesh.remove(this.label);
+    }
     const labelDiv = document.createElement("div");
     labelDiv.style.maxWidth = "700px";
     // labelDiv.textContent = text;
