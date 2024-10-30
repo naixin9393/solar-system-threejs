@@ -171,19 +171,34 @@ function setObjectGui(gui) {
 
 function createNewObjectFolder(object) {
   let folder = gui.addFolder("Properties");
-  folder.add(object, "name").name("Name").onChange((value) => {
-    object.createLabel(value, object.radius + 0.7);
-  })
-  folder.add(object, "radius", 0.1, 4).name("Radius").onChange(() => {
-    object.updateMesh(scene);
-  })
-  folder.add(object, "distance", 5, 80).name("Distance").onChange(() => {
-    object.updateOrbit(scene);
-  })
-  folder.add(object, "orbitalPeriod").name("Orbital Period");
-  folder.add(object, "spinPeriod").name("Spin Period");
-  folder.add(object, "minorAxis", 0.5, 4).name("Minor Axis").onChange(() => object.updateOrbit(scene));
-  folder.add(object, "majorAxis", 0.5, 4).name("Major Axis").onChange(() => object.updateOrbit(scene));
+  folder
+    .add(object, "name")
+    .name("Name")
+    .onChange((value) => {
+      object.createLabel(value, object.radius + 0.7);
+    });
+  folder
+    .add(object, "radius", 0.1, 4)
+    .name("Radius")
+    .onChange(() => {
+      object.updateMesh(scene);
+    });
+  folder
+    .add(object, "distance", 5, 80)
+    .name("Distance")
+    .onChange(() => {
+      object.updateOrbit(scene);
+    });
+  folder.add(object, "orbitalPeriod", 10, 1400).name("Orbital Period");
+  folder.add(object, "spinPeriod", 0.3, 100).name("Spin Period");
+  folder
+    .add(object, "minorAxis", 0.5, 4)
+    .name("Minor Axis")
+    .onChange(() => object.updateOrbit(scene));
+  folder
+    .add(object, "majorAxis", 0.5, 4)
+    .name("Major Axis")
+    .onChange(() => object.updateOrbit(scene));
   return folder;
 }
 
@@ -234,18 +249,18 @@ function addObjectEvent() {
     confirmAddObjectControls.enable();
     window.removeEventListener("mousedown", addObjectEvent);
     const intersectionPoint = intersects[0].point;
-    
+
     let celestialBody = new CelestialBody(newObject);
-    
+
     newObjectFolder = createNewObjectFolder(celestialBody);
 
     SUN.addSatellite(celestialBody);
 
     celestialBody.addToScene(scene);
-  SUN.animate(timestamp, 0, 0, camera);
+    SUN.animate(timestamp, 0, 0, camera);
 
     addedObjects.push(celestialBody);
-    console.log(addedObjects)
+    console.log(addedObjects);
   }
 }
 
@@ -297,7 +312,7 @@ function setCamera() {
 }
 
 function setLight() {
-  lightAmbient = new THREE.AmbientLight(0xffffff, 0.5);
+  lightAmbient = new THREE.AmbientLight(0xffffff, 0.1);
   scene.add(lightAmbient);
 
   lightPoint = new THREE.PointLight(0xffffff, 1, 0, 1);

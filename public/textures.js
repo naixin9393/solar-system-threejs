@@ -27,3 +27,8 @@ export const BUMP = {
 export const SPECULAR = {
   EARTH: new THREE.TextureLoader().load("/assets/textures-specular/earth.jpg"),
 };
+
+export const RING = {
+  SATURN: new THREE.TextureLoader().load("/assets/textures-ring/saturn.jpg"),
+  URANUS: new THREE.TextureLoader().load("/assets/textures-ring/uranus.jpg"),
+};

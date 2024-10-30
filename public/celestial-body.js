@@ -15,7 +15,7 @@ export class CelestialBody {
     texture = undefined,
     textureBump = undefined,
     textureSpecular = undefined,
-    name
+    name,
   }) {
     this.name = name;
     this.radius = radius;
@@ -48,10 +48,53 @@ export class CelestialBody {
     }
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
 
     this.createLabel(label, this.radius + 0.7);
 
     this.initializeOrbit();
+  }
+
+  setRing(innerRing, outerRing, textureRing) {
+    textureRing.wrapS = THREE.RepeatWrapping;
+    textureRing.wrapT = THREE.RepeatWrapping;
+    textureRing.repeat.set(1, 1);
+    textureRing.rotation = Math.PI / 2;
+
+    const ringGeometry = new THREE.RingGeometry(
+      innerRing * this.radius,
+      outerRing * this.radius,
+      64
+    );
+
+    const uv = ringGeometry.attributes.uv.array;
+    for (let i = 0; i < uv.length; i += 2) {
+      const x = uv[i] - 0.5;
+      const y = uv[i + 1] - 0.5;
+      const angle = Math.atan2(y, x);
+      const radius = Math.sqrt(x * x + y * y);
+      uv[i] = angle / (2 * Math.PI) + 0.5;
+      uv[i + 1] = radius;
+    }
+
+    ringGeometry.attributes.uv.needsUpdate = true;
+
+    const ringMaterial = new THREE.MeshPhongMaterial({
+      map: textureRing,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.rotation.x = Math.PI / 2;
+    ring.rotation.y = Math.PI / 5;
+
+    ring.castShadow = true;
+
+    this.mesh.add(ring);
+    this.ring = ring;
+    return this;
   }
 
   satellites() {
@@ -71,7 +114,7 @@ export class CelestialBody {
       0,
       0,
       this.majorAxis * this.distance,
-      this.minorAxis * this.distance,
+      this.minorAxis * this.distance
     );
     const points = curve.getPoints(360);
 
@@ -82,7 +125,7 @@ export class CelestialBody {
     let material = new THREE.LineBasicMaterial({ color: 0xffffff });
     this.orbit = new THREE.Line(geometry, material);
   }
-  
+
   updateOrbit(scene) {
     scene.remove(this.orbit);
     this.initializeOrbit();
@@ -96,10 +139,10 @@ export class CelestialBody {
       satellite.addToScene(scene);
     }
   }
-  
+
   updateMesh(scene) {
     scene.remove(this.mesh);
-    
+
     this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
     this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
@@ -118,9 +161,11 @@ export class CelestialBody {
     }
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
     scene.add(this.mesh);
   }
-  
+
   removeFromScene(scene) {
     scene.remove(this.mesh);
     scene.remove(this.orbit);
@@ -143,23 +188,37 @@ export class CelestialBody {
         this.minorAxis;
 
     this.mesh.rotation.y = (timestamp / this.spinPeriod) * 50;
-      
+
     const distanceToCamera = this.mesh.position.distanceTo(camera.position);
-    const scaleFactor = Math.min(1 / (distanceToCamera * distanceToCamera), 0.1);
-      this.label.element.style.fontSize = `${scaleFactor * 180}px`;
+    const scaleFactor = Math.min(
+      1 / (distanceToCamera * distanceToCamera),
+      0.1
+    );
+    this.label.element.style.fontSize = `${scaleFactor * 180}px`;
 
     for (let satellite of this.satellites) {
-      satellite.animate(timestamp, this.mesh.position.x, this.mesh.position.z, camera);
+      satellite.animate(
+        timestamp,
+        this.mesh.position.x,
+        this.mesh.position.z,
+        camera
+      );
     }
 
     if (this.orbit) {
       this.orbit.position.x = parentX;
       this.orbit.position.z = parentZ;
     }
+
+    if (this.ring) {
+      // this.ring.rotation.z = this.mesh.rotation.y + 1;
+      this.ring.lookAt(0, 1000, 0);
+    }
   }
 
   createLabel(text, y) {
     if (this.label) {
+      this.label.element.remove();
       this.mesh.remove(this.label);
     }
     const labelDiv = document.createElement("div");
@@ -169,7 +228,7 @@ export class CelestialBody {
     p.textContent = text;
     p.style.whiteSpace = "pre-line";
     labelDiv.appendChild(p);
-    this.label= new CSS2DObject(labelDiv);
+    this.label = new CSS2DObject(labelDiv);
     this.label.position.y = y;
     this.mesh.add(this.label);
   }

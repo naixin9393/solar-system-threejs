@@ -1,5 +1,5 @@
 import { CelestialBody } from "./celestial-body.js";
-import { TEXTURES, BUMP, SPECULAR } from "./textures.js";
+import { TEXTURES, BUMP, SPECULAR, RING } from "./textures.js";
 import { LABEL } from "./label.js";
 
 export const CELESTIAL_BODIES = {
@@ -90,19 +90,19 @@ export const CELESTIAL_BODIES = {
     majorAxis: 1,
     texture: TEXTURES.SATURN,
     label: LABEL.SATURN,
-  }),
+  }).setRing(1.2, 2.5, RING.SATURN),
 
   URANUS: new CelestialBody({
     name: "Uranus",
     radius: scale(40),
-    distance: scale(4000),
+    distance: scale(7000),
     orbitalPeriod: 30687,
     spinPeriod: -0.72,
     minorAxis: 1,
     majorAxis: 1,
     texture: TEXTURES.URANUS,
     label: LABEL.URANUS,
-  }),
+  }).setRing(1.2, 1.5, RING.URANUS),
 
   NEPTUNE: new CelestialBody({
     name: "Neptune",
