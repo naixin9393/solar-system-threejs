@@ -179,7 +179,7 @@ function createNewObjectFolder(object) {
     .add(object, "radius", 0.1, 4)
     .name("Radius")
     .onChange(() => {
-      object.updateMesh(scene);
+      object.updateMesh(scene, timestamp);
     });
   folder
     .add(object, "distance", 5, 80)

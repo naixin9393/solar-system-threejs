@@ -145,11 +145,10 @@ export class CelestialBody {
     }
   }
 
-  updateMesh(scene) {
+  updateMesh(scene, timestamp) {
     scene.remove(this.mesh);
 
     this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
-    // this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
     if (this.texture != undefined) {
       this.material.map = this.texture;
@@ -168,6 +167,17 @@ export class CelestialBody {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
+    
+    this.mesh.position.x =
+    Math.sin((timestamp * baseSpeed) / this.orbitalPeriod) *
+      this.distance *
+      this.majorAxis;
+
+  this.mesh.position.z =
+    Math.cos((timestamp * baseSpeed) / this.orbitalPeriod) *
+      this.distance *
+      this.minorAxis;
+    
     scene.add(this.mesh);
   }
 
