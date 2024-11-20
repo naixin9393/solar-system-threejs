@@ -7,13 +7,11 @@ import { CELESTIAL_BODIES } from "./celestial-body-constants.js";
 import { flyControls, mapControls } from "./camera-controls.js";
 
 import FakeGlowMaterial from "./fake-glow.js";
+import { CelestialShaderMaterial } from "./shader-material.js";
 
 import { LABEL } from "./label.js";
 
-import {
-  CSS2DRenderer,
-  CSS2DObject,
-} from "https://cdn.jsdelivr.net/npm/three/examples/jsm/renderers/CSS2DRenderer.js";
+import { CSS2DRenderer,CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
 let accglobal = 0.0003;
 let addedObjects = [];
@@ -249,6 +247,8 @@ function addObjectEvent() {
     confirmAddObjectControls.enable();
     window.removeEventListener("mousedown", addObjectEvent);
     const intersectionPoint = intersects[0].point;
+    
+    newObject.material = new CelestialShaderMaterial();
 
     let celestialBody = new CelestialBody(newObject);
 

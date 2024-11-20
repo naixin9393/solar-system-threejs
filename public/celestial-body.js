@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CSS2DObject } from "https://cdn.jsdelivr.net/npm/three/examples/jsm/renderers/CSS2DRenderer.js";
+import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
 const baseSpeed = 30;
 
@@ -16,6 +16,7 @@ export class CelestialBody {
     textureBump = undefined,
     textureSpecular = undefined,
     name,
+    material = undefined,
   }) {
     this.name = name;
     this.radius = radius;
@@ -31,7 +32,11 @@ export class CelestialBody {
     this.satellites = [];
 
     this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
-    this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    if (material) {
+      this.material = material;
+    } else {
+      this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    }
 
     if (this.texture != undefined) {
       this.material.map = this.texture;
@@ -144,7 +149,7 @@ export class CelestialBody {
     scene.remove(this.mesh);
 
     this.geometry = new THREE.SphereGeometry(this.radius, 20, 20);
-    this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    // this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
     if (this.texture != undefined) {
       this.material.map = this.texture;
