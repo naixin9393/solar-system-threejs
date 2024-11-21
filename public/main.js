@@ -49,6 +49,7 @@ let renderer;
 let scene;
 let t0;
 let timestamp;
+let shaders = [];
 const labelRenderer = new CSS2DRenderer();
 labelRenderer.setSize(window.innerWidth, window.innerHeight);
 labelRenderer.domElement.style.position = "absolute";
@@ -106,6 +107,7 @@ function animationLoop() {
     timestamp = (Date.now() - t0) * accglobal;
   }
   SUN.animate(timestamp, 0, 0, camera);
+  updateShaders(timestamp);
 }
 
 function setSolarSystem() {
@@ -248,7 +250,9 @@ function addObjectEvent() {
     window.removeEventListener("mousedown", addObjectEvent);
     const intersectionPoint = intersects[0].point;
     
-    newObject.material = new CelestialShaderMaterial();
+    newObject.material = new CelestialShaderMaterial({time: timestamp});
+
+    shaders.push(newObject.material);
 
     let celestialBody = new CelestialBody(newObject);
 
@@ -388,4 +392,10 @@ function toggleCamera() {
   cameraControls.enabled = true;
   cameraToggleControl.object.mode =
     cameraControls === mapCameraControls ? "Map" : "Fly";
+}
+
+function updateShaders(timestamp) {
+  shaders.forEach((shader) => {
+    shader.uniforms.time.value = timestamp;
+  });
 }
